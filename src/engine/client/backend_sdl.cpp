@@ -7,6 +7,7 @@
 
 #include "graphics_threaded.h"
 #include "backend_sdl.h"
+#include <unistd.h>
 
 // ------------ CGraphicsBackend_Threaded
 
@@ -423,13 +424,24 @@ void CCommandProcessorFragment_SDL::Cmd_VideoModes(const CCommandBuffer::SComman
 			dbg_msg("gfx", "unable to get display mode: %s", SDL_GetError());
 			continue;
 		}
+		bool Skip = false;
+		for(int j = 0; j < numModes; j++)
+		{
+			if(pCommand->m_pModes[j].m_Width == mode.w && pCommand->m_pModes[j].m_Height == mode.h)
+			{
+				Skip = true; break;
+			}
+		}
+		if(Skip)
+			continue;
 
-		pCommand->m_pModes[i].m_Width = mode.w;
-		pCommand->m_pModes[i].m_Height = mode.h;
-		pCommand->m_pModes[i].m_Red = 8;
-		pCommand->m_pModes[i].m_Green = 8;
-		pCommand->m_pModes[i].m_Blue = 8;
+		pCommand->m_pModes[numModes].m_Width = mode.w;
+		pCommand->m_pModes[numModes].m_Height = mode.h;
+		pCommand->m_pModes[numModes].m_Red = 8;
+		pCommand->m_pModes[numModes].m_Green = 8;
+		pCommand->m_pModes[numModes].m_Blue = 8;
 		numModes++;
+
 	}
 	*pCommand->m_pNumModes = numModes;
 }
@@ -494,8 +506,8 @@ int CGraphicsBackend_SDL_OpenGL::Init(const char *pName, int *Width, int *Height
 		#endif
 	}
 
-	SDL_DisplayMode mode;
-	if(SDL_GetCurrentDisplayMode(0, &mode) < 0)
+	SDL_Rect ScreenBounds;
+	if(SDL_GetDisplayBounds(0, &ScreenBounds) < 0)
 	{
 		dbg_msg("gfx", "unable to get current display mode: %s", SDL_GetError());
 		return -1;
@@ -503,12 +515,12 @@ int CGraphicsBackend_SDL_OpenGL::Init(const char *pName, int *Width, int *Height
 
 	if(*Width == 0 || *Height == 0)
 	{
-		*Width = mode.w;
-		*Height = mode.h; 
+		*Width = ScreenBounds.w;
+		*Height = ScreenBounds.h; 
 	}
 
-	*pDesktopWidth = mode.w;
-	*pDesktopHeight = mode.h;
+	*pDesktopWidth = ScreenBounds.w;
+	*pDesktopHeight = ScreenBounds.h;
 
 	if(FsaaSamples)
 	{
@@ -527,21 +539,20 @@ int CGraphicsBackend_SDL_OpenGL::Init(const char *pName, int *Width, int *Height
 	int SdlFlags = SDL_WINDOW_OPENGL;
 	if(Flags&IGraphicsBackend::INITFLAG_RESIZABLE)
 		SdlFlags |= SDL_WINDOW_RESIZABLE;
+	if(Flags&IGraphicsBackend::INITFLAG_BORDERLESS)
+		SdlFlags |= SDL_WINDOW_BORDERLESS;
+	if(Flags&IGraphicsBackend::INITFLAG_FULLSCREEN)
+		SdlFlags |= SDL_WINDOW_FULLSCREEN;
 
 	dbg_assert(!(Flags&IGraphicsBackend::INITFLAG_BORDERLESS)
 		|| !(Flags&IGraphicsBackend::INITFLAG_FULLSCREEN),
 		"only one of borderless and fullscreen may be activated at the same time");
 
-	if(Flags&IGraphicsBackend::INITFLAG_BORDERLESS)
-		SdlFlags |= SDL_WINDOW_BORDERLESS;
-
-	if(Flags&IGraphicsBackend::INITFLAG_FULLSCREEN)
-		SdlFlags |= SDL_WINDOW_FULLSCREEN;
-
+	// CreateWindow apparently doesn't care about the window position in fullscreen
 	m_pWindow = SDL_CreateWindow(
 		pName,
-		SDL_WINDOWPOS_UNDEFINED,
-		SDL_WINDOWPOS_UNDEFINED,
+		SDL_WINDOWPOS_UNDEFINED_DISPLAY(0),
+		SDL_WINDOWPOS_UNDEFINED_DISPLAY(0),
 		*Width,
 		*Height,
 		SdlFlags
