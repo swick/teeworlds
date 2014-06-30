@@ -316,6 +316,7 @@ public:
 	virtual void Maximize() = 0;
 	virtual int WindowActive() = 0;
 	virtual int WindowOpen() = 0;
+	virtual int GetNumScreens() = 0;
 
 	virtual void RunBuffer(CCommandBuffer *pBuffer) = 0;
 	virtual bool IsIdle() const = 0;
@@ -440,6 +441,7 @@ public:
 	virtual void Swap();
 
 	virtual int GetVideoModes(CVideoMode *pModes, int MaxModes, int Screen);
+	virtual int GetNumScreens();
 
 	virtual int GetDesktopScreenWidth() { return m_DesktopScreenWidth; }
 	virtual int GetDesktopScreenHeight() { return m_DesktopScreenHeight; }

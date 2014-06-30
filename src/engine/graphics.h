@@ -159,6 +159,7 @@ public:
 
 	virtual void TakeScreenshot(const char *pFilename) = 0;
 	virtual int GetVideoModes(CVideoMode *pModes, int MaxModes, int Screen) = 0;
+	virtual int GetNumScreens() = 0;
 
 	virtual int GetDesktopScreenWidth() = 0;
 	virtual int GetDesktopScreenHeight() = 0;

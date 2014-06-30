@@ -656,8 +656,8 @@ int CGraphicsBackend_SDL_OpenGL::Init(const char *pName, int Screen, int *Width,
 
 	m_pWindow = SDL_CreateWindow(
 		pName,
-		SDL_WINDOWPOS_UNDEFINED_DISPLAY(0),
-		SDL_WINDOWPOS_UNDEFINED_DISPLAY(0),
+		SDL_WINDOWPOS_UNDEFINED_DISPLAY(Screen),
+		SDL_WINDOWPOS_UNDEFINED_DISPLAY(Screen),
 		*Width,
 		*Height,
 		SdlFlags);
@@ -751,6 +751,11 @@ int CGraphicsBackend_SDL_OpenGL::WindowOpen()
 {
 	return SDL_GetWindowFlags(m_pWindow)&SDL_WINDOW_SHOWN;
 
+}
+
+int CGraphicsBackend_SDL_OpenGL::GetNumScreens()
+{
+	return SDL_GetNumVideoDisplays();
 }
 
 

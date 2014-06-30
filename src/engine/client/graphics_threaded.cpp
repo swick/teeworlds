@@ -926,4 +926,9 @@ int CGraphics_Threaded::GetVideoModes(CVideoMode *pModes, int MaxModes, int Scre
 	return NumModes;
 }
 
+int CGraphics_Threaded::GetNumScreens()
+{
+	return m_pBackend->GetNumScreens();
+}
+
 extern IEngineGraphics *CreateEngineGraphicsThreaded() { return new CGraphics_Threaded(); }
